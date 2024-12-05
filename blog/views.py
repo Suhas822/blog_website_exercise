@@ -1,15 +1,24 @@
 from django.shortcuts import render
-from .models import BlogPost
+from .models import BlogPost  # Replace with your model
+from .utils import get_user_country, get_client_ip
 
-from .utils import get_user_country
-from .utils import get_client_ip,get_user_country
-
-
-def post_list(request):
-  
-    ip_address = get_client_ip(request)
-    country = get_user_country(ip_address)
+def blog_posts_view(request):
     
-    posts = BlogPost.objects.all()
-    filtered_posts = posts.filter(country=country)
-    return render(request, 'blog/post_list.html', {'posts': filtered_posts,'user_country': country})
+    ip_address = get_client_ip(request)
+    ip_address="101.32.80.0"
+    user_country = get_user_country(ip_address)
+
+    
+    country_filter = request.GET.get('filter_by_country', None)
+
+    if country_filter:
+     
+        posts = BlogPost.objects.filter(country=user_country)
+    else:
+       
+        posts = BlogPost.objects.all()
+
+    return render(request, 'blog/post_list.html', {
+        'posts': posts,
+        'user_country': user_country,
+    })
