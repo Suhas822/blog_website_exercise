@@ -1,18 +1,39 @@
 import csv
+from django.core.management.base import BaseCommand, CommandError
 from blog.models import BlogPost
+from django.utils.termcolors import colorize
 
-class Command():
+class Command(BaseCommand):
     help = 'Import blog posts from a CSV file'
 
     def add_arguments(self, parser):
-        """
-            Add logic to add argument for passing the csv file
-        """
+        
+        parser.add_argument(
+            'csv_file',
+            type=str,
+            help='The path to the CSV file containing blog posts data'
+        )
 
     def handle(self, *args, **kwargs):
-        """
-            populate the database with the same data from data/blog_post.csv
-            Style the output so that errors are shown in red and a successfull import is in green.
-        """
+        csv_file_path = kwargs['csv_file']
 
-        
+        try:
+            with open(csv_file_path, 'r') as csv_file:
+                reader = csv.DictReader(csv_file)
+                for row in reader:
+                   
+                    blog_post = BlogPost(
+                        title=row['title'],
+                        content=row['content'],
+                        country=row['country']
+                    )
+                    blog_post.save()
+
+                    
+                    self.stdout.write(colorize(f"Successfully imported: {row['title']}", fg='green'))
+        except FileNotFoundError:
+            raise CommandError(f"The file {csv_file_path} does not exist.")
+        except KeyError as e:
+            raise CommandError(f"Missing column in CSV: {e}")
+        except Exception as e:
+            raise CommandError(f"An error occurred: {e}")
