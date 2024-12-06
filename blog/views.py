@@ -5,7 +5,7 @@ from .utils import get_user_country, get_client_ip
 def blog_posts_view(request):
     
     ip_address = get_client_ip(request)
-    ip_address="101.32.80.0"
+  
     user_country = get_user_country(ip_address)
 
     
